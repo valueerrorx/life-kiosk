@@ -1,0 +1,9 @@
+[Group]
+Icon=preferences-desktop-plasma.png
+Description=Disable important parts of the Systemsettings
+
+[Action-1]
+Type=module
+Key=formats.desktop
+Name=Lock down formats settings
+Description=When the formats settings are locked down the user can no longer change them.
