@@ -14,11 +14,12 @@ The UI autogenerates itself by reading those config files. Therefore this applic
 
 Example:
 
-[Action-1]
-Type=action restriction
-Key=action/kwin_rmb
-Name=Disable Window Manager context menu (Alt-F3)
-Description=The Window Manager context menu is normally shown when Alt-F3 is pressed or when the menu button on the window frame is pressed
+* [Action-1]
+* Type=action restriction
+* Key=action/kwin_rmb
+* Name=Disable Window Manager context menu (Alt-F3)
+* Description=The Window Manager context menu is normally shown when Alt-F3 is pressed or when the menu button on the window frame is pressed
+
 
 
 
