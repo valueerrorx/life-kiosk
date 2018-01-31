@@ -7,20 +7,11 @@
 # of the GPLv3 license.  See the LICENSE file for details.
 
 
-
-import sys, os
-import socket
 from PyQt5 import QtCore, uic, QtWidgets
 from PyQt5.QtGui import *
-
-import threading
-import time
-
 import ConfigParser
-
-
-
-
+import sys
+import os
 
 class MeinDialog(QtWidgets.QDialog):
   
