@@ -1,5 +1,6 @@
 [Group]
-Icon=plasmavault.png
+Icon=plasmavault
+Name=Filebrowsing
 Description=Options for file browsing using Dolphin or Konqueror
 
 

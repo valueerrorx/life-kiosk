@@ -1,5 +1,6 @@
 [Group]
-Icon=homerun.png
+Icon=homerun
+Name=Actions
 Description=Enable and disable common menu actions found in applications.
 
 [Action-67]

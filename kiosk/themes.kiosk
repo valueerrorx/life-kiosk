@@ -1,6 +1,7 @@
 [Group]
-Icon=kolourpaint.png
-Description=Set up of Fonts, Colors and Style
+Icon=kolourpaint
+Name=Layout and Themes
+Description=Set up of Fonts Colors and Style
 
 [Action-1]
 Type=module
@@ -27,19 +28,7 @@ Name=Lock down window decoration settings
 Description=When the window decoration settings are locked down the user can no longer change them.
 
 [Action-5]
-Type=config
-Key=widgetStyle
-Group=General
-Name=Default KDE Widget Style
-Description=Set the system wide widget style to the following style.
-
-[Action-6]
 Type=module
 Key=screensaver.desktop
 Name=Lock down Screen Saver Settings
 Description=When the Screen Saver settings are locked down the user can no longer change them.
-#[Action-7]
-#Type=immutable - broken
-#File=kscreensaverrc
-#Name=Lock down Screen Saver Settings
-#Description=When the Screen Saver settings are locked down the user can no longer change them.

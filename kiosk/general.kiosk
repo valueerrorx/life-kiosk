@@ -1,6 +1,7 @@
 [Group]
-Icon=kdeapp.png
-Description=Generic restrictions for a KDE session
+Icon=kdeapp
+Name=General
+Description=General restrictions for a KDE Plasma session
 
 [Action-1]
 Type=action restriction
