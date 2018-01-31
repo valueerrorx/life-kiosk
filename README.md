@@ -14,7 +14,7 @@ The UI autogenerates itself by reading those config files. Therefore this applic
 
 
 
-![Image of life-kiosk](http://life-edu.eu/images/life-kiosk.png)
+![Image of life-kiosk](http://life-edu.eu/images/life-kiosk-1.png)
 
 
 
