@@ -8,6 +8,12 @@ The applications allows to lock down plasma desktop, filemanagmenet and other im
 
 State:  planning / pre-alpha 
 
+The .kiosk files contain all the available action restrictions, url restrictions, control module restrictions.
+The UI autogenerates itself by reading those config files. Therefore this application should be very easy to maintain.
+
+
+
+
 ![Image of life-kiosk](http://life-edu.eu/images/life-kiosk.png)
 
 
