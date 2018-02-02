@@ -6,9 +6,11 @@
 # This software may be modified and distributed under the terms
 # of the GPLv3 license.  See the LICENSE file for details.
 
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.uic import loadUi
 
-from PyQt5 import QtCore, uic, QtWidgets
-from PyQt5.QtGui import *
 import ConfigParser
 import sys
 import os
@@ -21,31 +23,39 @@ class MeinDialog(QtWidgets.QDialog):
         uifile=os.path.join(scriptdir,'kiosk.ui')
         winicon=os.path.join(scriptdir,'images/kiosk.png')
         
-        self.ui = uic.loadUi(uifile)        # load UI
+        self.ui = loadUi(uifile)        # load UI
         self.ui.setWindowIcon(QIcon(winicon))
         self.ui.exit.clicked.connect(self.onAbbrechen)        # setup Slots
         self.ui.start.clicked.connect(self.onStartConfig)
 
+        self.configpath = "kiosk"
         self.configfiles = []
-        self.getConfigFiles()
-        self.readConfig()
+        self.configoptions = {}
+        
+        self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
+        self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
      
         
     
 
     def getConfigFiles(self):
-        
-        for root, dirs, files in os.walk("kiosk/"):
+        """
+        searches for config files in the config path and
+        fills self.configfiles and self.configoptions
+        """
+        for root, dirs, files in os.walk(self.configpath):
             for name in files:
                 if name.endswith((".kiosk")):
-                     self.configfiles.append(os.path.join(root, name))
-        
-
-
+                    self.configfiles.append(name)
+                    self.configoptions[name]=[]
 
 
 
     def ConfigSectionMap(self, section):
+        """ 
+        creates a dictionary of the specified config section
+        returns: dict1
+        """
         dict1 = {}
         options = self.Config.options(section)
         for option in options:
@@ -62,16 +72,12 @@ class MeinDialog(QtWidgets.QDialog):
 
 
 
-    def onStartConfig(self):
-        print("nothing yet")
-    
 
 
-    def readConfig(self):
+    def createTabs(self):
         for configfile in self.configfiles:
             generalgrid,groupname,sectionicon = self.createGrid(configfile)
             tab = QtWidgets.QWidget()
-           
             tab.setLayout(generalgrid)
             self.ui.tabWidget.addTab(tab, sectionicon, groupname)
             
@@ -83,11 +89,12 @@ class MeinDialog(QtWidgets.QDialog):
         this section reads the config.kiosk file 
         and creates tabs for every configfile and qtwidgets for every action 
         in the config file
-        returns: maingrid, groupname
+        returns: maingrid, groupname, sectionicon
         """
         self.Config = ConfigParser.ConfigParser()
-        self.Config.read(configfile)
-        sections = self.Config.sections()
+        configfilepath = os.path.join(self.configpath,configfile)
+        self.Config.read(configfilepath)
+        sections = self.Config.sections()   #creates a list of all found sections in the config file
 
         maingrid = QtWidgets.QGridLayout()   #this is the mainlayout that is returned and later applied to the tab 
         scrollarea = QtWidgets.QScrollArea()  # scrollarea is the only widget inside the mainlayout
@@ -97,13 +104,13 @@ class MeinDialog(QtWidgets.QDialog):
  
         widgets = []
         for section in sections:
-            if section == "Group":
+            if section == "Group":   # this is a mandatory section of every configfile and creates the tab, description, tabicon etc.
                 try:
                     groupicon = self.ConfigSectionMap(section)['icon']
                     groupname = self.ConfigSectionMap(section)['name']
                     groupdesc = self.ConfigSectionMap(section)['description']
                 except KeyError:
-                    print("key not found")
+                    print("one or more keys not found")
        
                 sectionicon = QIcon.fromTheme(groupicon)
                 itemicon = QtWidgets.QLabel()
@@ -124,19 +131,19 @@ class MeinDialog(QtWidgets.QDialog):
                 titlewidget.setLayout(grid)
                 scrollgrid.addWidget(titlewidget,0,0)
                 
-            else:
+            else:  #these are normal kiosk restriction keys 
                 try:
                     sectiontype = self.ConfigSectionMap(section)['type']
                     sectionkey = self.ConfigSectionMap(section)['key']
                     sectionname = self.ConfigSectionMap(section)['name']
                     sectiondesc = self.ConfigSectionMap(section)['description']
                 except KeyError:
-                    print("key not found")
+                    print("one or more keys not found")
                 
                 itemname = QtWidgets.QLabel()
                 itemname.setText("<b>%s</b>" % sectionname)
                 itemname.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Expanding)
-                itemname.setAlignment(QtCore.Qt.AlignLeft)
+                itemname.setAlignment(Qt.AlignLeft)
                 itemname.setStyleSheet("margin-top:1px;")
                 
                 itemdesc = QtWidgets.QLabel()
@@ -144,7 +151,7 @@ class MeinDialog(QtWidgets.QDialog):
                 itemdesc.setText(sectiondesc)
                 itemdesc.setWordWrap(True);
                 itemdesc.setStyleSheet("margin-left:1px;")
-                itemdesc.setAlignment(QtCore.Qt.AlignTop)
+                itemdesc.setAlignment(Qt.AlignTop)
     
                 itemcheckBox = QtWidgets.QCheckBox()
                 itemcheckBox.setStyleSheet("margin-left:-2px;")
@@ -159,18 +166,31 @@ class MeinDialog(QtWidgets.QDialog):
                 widget = QtWidgets.QWidget()
                 widget.setSizePolicy(QtWidgets.QSizePolicy.Minimum,QtWidgets.QSizePolicy.Minimum)
                 widget.setLayout(grid)
-                widgets.append(widget)
+                widgets.append(widget)  #add the finalized widget to the widgets list
 
 
         for widget in widgets:
-            scrollgrid.addWidget(widget)
+            scrollgrid.addWidget(widget)   # add all widgets to the scrollgrid layout
 
-        scrollwidget.setLayout(scrollgrid)
-        scrollarea.setWidget(scrollwidget)
-        maingrid.addWidget(scrollarea,0,0)
-        
+        scrollwidget.setLayout(scrollgrid)  # set scrollgrid as layout for the scroll widget
+        scrollarea.setWidget(scrollwidget)  # set the scrollwidget as mainwidget for the scrollarea
+        maingrid.addWidget(scrollarea,0,0)  # add the scrollalrea to the maingrid layout which will then be used as mainlayout for the specfic Tab
+         
         return maingrid, groupname, sectionicon
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    def onStartConfig(self):
+        print("nothing yet")
     
     
     def onAbbrechen(self):    # Exit button
