@@ -140,6 +140,7 @@ class MeinDialog(QtWidgets.QDialog):
                 except KeyError:
                     print("one or more keys not found")
                 
+                
                 itemname = QtWidgets.QLabel()
                 itemname.setText("<b>%s</b>" % sectionname)
                 itemname.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Expanding)
@@ -167,6 +168,8 @@ class MeinDialog(QtWidgets.QDialog):
                 widget.setSizePolicy(QtWidgets.QSizePolicy.Minimum,QtWidgets.QSizePolicy.Minimum)
                 widget.setLayout(grid)
                 widgets.append(widget)  #add the finalized widget to the widgets list
+                
+                restriction= Restriction(sectiontype, sectionkey, sectionname, sectiondesc)
 
 
         for widget in widgets:
@@ -182,10 +185,7 @@ class MeinDialog(QtWidgets.QDialog):
     
     
     
-    
-    
-    
-    
+
     
     
     
@@ -197,6 +197,21 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.close()
         os._exit(0)
 
+
+
+
+class Restriction(object):
+    rtype = ""
+    rkey  = ""
+    rname = ""
+    rdesc = ""
+    
+    # The class "constructor"
+    def __init__(self, rtype, rkey, rname, rdesc):
+        self.rtype = rtype
+        self.rkey = rkey
+        self.rname = rname
+        self.rdesc = rdesc
 
 
 
