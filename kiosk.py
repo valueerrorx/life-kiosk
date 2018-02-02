@@ -30,24 +30,25 @@ class MeinDialog(QtWidgets.QDialog):
 
         self.configpath = "kiosk"
         self.configfiles = []
-        self.configoptions = {}
+        self.restrictionsdict = {}  #this dict will contain a list of all keys for evey kiosk section
         
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
      
+       
         
     
 
     def getConfigFiles(self):
         """
         searches for config files in the config path and
-        fills self.configfiles and self.configoptions
+        fills self.configfiles and self.restrictionsdict
         """
         for root, dirs, files in os.walk(self.configpath):
-            for name in files:
-                if name.endswith((".kiosk")):
-                    self.configfiles.append(name)
-                    self.configoptions[name]=[]
+            for configfilename in files:
+                if configfilename.endswith((".kiosk")):
+                    self.configfiles.append(configfilename)
+                    self.restrictionsdict[configfilename]=[] #create an empty list for each entry in the dictionary
 
 
 
@@ -75,16 +76,19 @@ class MeinDialog(QtWidgets.QDialog):
 
 
     def createTabs(self):
-        for configfile in self.configfiles:
-            generalgrid,groupname,sectionicon = self.createGrid(configfile)
+        for configfilename in self.configfiles:
+            generalgrid,groupname,sectionicon = self.createGrid(configfilename)
             tab = QtWidgets.QWidget()
             tab.setLayout(generalgrid)
             self.ui.tabWidget.addTab(tab, sectionicon, groupname)
             
+            for restriction in self.restrictionsdict[configfilename]:
+                print(restriction.rcheckbox.isChecked() )
+            
 
     
     
-    def createGrid(self, configfile):
+    def createGrid(self, configfilename):
         """
         this section reads the config.kiosk file 
         and creates tabs for every configfile and qtwidgets for every action 
@@ -92,7 +96,7 @@ class MeinDialog(QtWidgets.QDialog):
         returns: maingrid, groupname, sectionicon
         """
         self.Config = ConfigParser.ConfigParser()
-        configfilepath = os.path.join(self.configpath,configfile)
+        configfilepath = os.path.join(self.configpath,configfilename)
         self.Config.read(configfilepath)
         sections = self.Config.sections()   #creates a list of all found sections in the config file
 
@@ -140,6 +144,8 @@ class MeinDialog(QtWidgets.QDialog):
                 except KeyError:
                     print("one or more keys not found")
                 
+                itemtype = sectiontype
+                itemkey = sectionkey
                 
                 itemname = QtWidgets.QLabel()
                 itemname.setText("<b>%s</b>" % sectionname)
@@ -169,7 +175,8 @@ class MeinDialog(QtWidgets.QDialog):
                 widget.setLayout(grid)
                 widgets.append(widget)  #add the finalized widget to the widgets list
                 
-                restriction= Restriction(sectiontype, sectionkey, sectionname, sectiondesc)
+                restriction = Restriction(itemtype, itemkey, itemname, itemdesc, itemcheckBox)
+                self.restrictionsdict[configfilename].append(restriction)  #append to list in section of the dictionary
 
 
         for widget in widgets:
@@ -205,14 +212,15 @@ class Restriction(object):
     rkey  = ""
     rname = ""
     rdesc = ""
+    rcheckbox = ""
     
     # The class "constructor"
-    def __init__(self, rtype, rkey, rname, rdesc):
+    def __init__(self, rtype, rkey, rname, rdesc, rcheckbox):
         self.rtype = rtype
         self.rkey = rkey
         self.rname = rname
         self.rdesc = rdesc
-
+        self.rcheckbox = rcheckbox
 
 
 app = QtWidgets.QApplication(sys.argv)
