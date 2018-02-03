@@ -16,6 +16,21 @@ import sys
 import os
 import subprocess
 
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
 class MeinDialog(QtWidgets.QDialog):
   
     def __init__(self):
@@ -44,8 +59,9 @@ class MeinDialog(QtWidgets.QDialog):
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
         self.loadLastconfig()   #reads profiles/last.profile and activates the checkboxes
        
-        
-    
+        if os.geteuid() != 0:
+            print ("You need root access in order to activate KIOSK mode")
+            onAbbrechen()
 
     def getConfigFiles(self):
         """
@@ -270,6 +286,9 @@ class MeinDialog(QtWidgets.QDialog):
         
         
     def loadLastconfig(self):
+        """
+        reads last.profile and resets the ui state
+        """
         with open(self.lastprofilepath) as fileobject:
             lastconfig = fileobject.readlines()
         # remove whitespace characters like `\n` at the end of each line
@@ -310,10 +329,13 @@ class MeinDialog(QtWidgets.QDialog):
               
               
         print(kdeglobalstext)
+        try:
+            fileobject = open(self.plasmaconfigglobal,"w")  
+            fileobject.write(kdeglobalstext)
+            print("configuration written to %s" % self.plasmaconfigglobal)
+        except IOError:
+            print("Please make sure that you have access rights to %s" % self.plasmaconfigglobal )
             
-        
-        
-
 
 
 
