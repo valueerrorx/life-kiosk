@@ -32,7 +32,6 @@ import subprocess
 
 
 class MeinDialog(QtWidgets.QDialog):
-  
     def __init__(self):
         QtWidgets.QDialog.__init__(self)
         self.scriptdir=os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +43,6 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.exit.clicked.connect(self.onAbbrechen)        # setup Slots
         self.ui.start.clicked.connect(self.onStartConfig)
 
-
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
         self.USER_HOME_DIR = os.path.join("/home", str(self.USER))
         self.configpath = "kiosk"
@@ -54,11 +52,10 @@ class MeinDialog(QtWidgets.QDialog):
         self.restrictionsdict = {}  #this dict will contain a list of all widgets for all keys for evey kiosk section
         self.activerestrictions = {"module" : [] , "actionrestriction" : [], "url" : [] }  #this dict will contain active restrictionkeys by type
         
-        
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
         self.loadLastconfig()   #reads profiles/last.profile and activates the checkboxes
-       
+        
         #check for root permissions 
         if os.geteuid() != 0:
             print ("You need root access in order to activate KIOSK mode")
@@ -101,10 +98,6 @@ class MeinDialog(QtWidgets.QDialog):
 
 
 
-
-
-
-
     def createTabs(self):
         """
         Generates a tab in the UI for every found configuration .kiosk file and 
@@ -116,8 +109,6 @@ class MeinDialog(QtWidgets.QDialog):
             tab.setLayout(generalgrid)
             self.ui.tabWidget.addTab(tab, sectionicon, groupname)
 
-
-    
     
     def createGrid(self, configfilename):
         """
@@ -217,7 +208,6 @@ class MeinDialog(QtWidgets.QDialog):
                 restriction = Restriction(itemtype, itemkey, itemname, itemdesc, itemcheckBox)
                 self.restrictionsdict[configfilename].append(restriction)  #append to list in section of the dictionary
 
-
         for widget in widgets:
             scrollgrid.addWidget(widget)   # add all widgets to the scrollgrid layout
 
@@ -240,25 +230,10 @@ class MeinDialog(QtWidgets.QDialog):
         parses all widgets and writes the state of the checkboxes into "last.profile" 
         then writes the plasma configuration files and reloads plasma desktop  
         """
-        #save the current configuration
         self.saveLastconfig()        #fills self.activerestrictions and saves all keys to last.profile
-        
-        #write plasma Config
-        self.savePlasmaConfig()
-        
-        
-        
-        
-        #reload desktop
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        configtext = self.createPlasmaConfig()  #prepare config text
+        self.showDialog(configtext)   #ask for confirmation
+    
         
     def saveLastconfig(self):
         """
@@ -274,8 +249,7 @@ class MeinDialog(QtWidgets.QDialog):
             for restriction in self.restrictionsdict[configfilename]:
                 if restriction.rcheckbox.isChecked():
                     self.activerestrictions[restriction.rtype].append(restriction.rkey )
-           
-        
+
         #generate profile file text
         profileconfigcontent = ""
         
@@ -286,9 +260,6 @@ class MeinDialog(QtWidgets.QDialog):
         fileobject.write(profileconfigcontent)
         print("last.config written")
      
-        
-        
-        
         
         
     def loadLastconfig(self):
@@ -312,10 +283,11 @@ class MeinDialog(QtWidgets.QDialog):
 
 
 
-
-
-    def savePlasmaConfig(self):
-        
+    def createPlasmaConfig(self):
+        """
+        creates the proper configuration text
+        return kdeglobalstext: str
+        """
         kdeglobalstext = ""
         for section in self.activerestrictions:
             if section is "actionrestriction":
@@ -332,19 +304,53 @@ class MeinDialog(QtWidgets.QDialog):
                 kdeglobalstext += "\n[KDE URL Restrictions][$i]\n"
                 for restriction in self.activerestrictions[section]:
                     kdeglobalstext += "%s = false \n" % (restriction )
-              
-              
-        print(kdeglobalstext)
+                    
+        return kdeglobalstext
+    
+    
+    
+    def savePlasmaConfig(self, configtext):
+        """ 
+        writes the configuration to file
+        """
         try:
             fileobject = open(self.plasmaconfigglobal,"w")  
-            fileobject.write(kdeglobalstext)
+            fileobject.write(configtext)
             print("configuration written to %s" % self.plasmaconfigglobal)
         except IOError:
             print("Please make sure that you have access rights to %s" % self.plasmaconfigglobal )
-            
 
+        
+        
 
+    def reloadDesktop(self):
+        """
+        restarts plasmashell, kwin, etc.
+        """
+        command = "kquitapp5 ksmserver"   #brutal !! FIXME re-read configuration files only 
+        os.system(command)
+  
+  
+  
+    def showDialog(self, configtext):
+        """
+        Displays an "are you sure" dialog and the configuration text
+        """
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
 
+        msg.setText("Kiosk Mode")
+        msg.setInformativeText("Do you want to activate the Kiosk Settings now ?")
+        msg.setWindowTitle("LiFE Kiosk")
+        msg.setDetailedText("This will save the following configuration to %s and restart the desktop:\n %s" % (self.plasmaconfigglobal,configtext ))
+        msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+      
+        retval = msg.exec_()   # 16384 = yes, 65536 = no
+        if str(retval) == "16384":
+            self.savePlasmaConfig(configtext)
+            self.reloadDesktop()
+
+        
 
 
 
