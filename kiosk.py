@@ -62,6 +62,7 @@ class MeinDialog(QtWidgets.QDialog):
         if os.geteuid() != 0:
             print ("You need root access in order to activate KIOSK mode")
             onAbbrechen()
+            
 
     def getConfigFiles(self):
         """
