@@ -7,7 +7,7 @@
 # of the GPLv3 license.  See the LICENSE file for details.
 
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import Qt
 from PyQt5.uic import loadUi
 
@@ -19,9 +19,9 @@ class MeinDialog(QtWidgets.QDialog):
   
     def __init__(self):
         QtWidgets.QDialog.__init__(self)
-        scriptdir=os.path.dirname(os.path.abspath(__file__))
-        uifile=os.path.join(scriptdir,'kiosk.ui')
-        winicon=os.path.join(scriptdir,'images/kiosk.png')
+        self.scriptdir=os.path.dirname(os.path.abspath(__file__))
+        uifile=os.path.join(self.scriptdir,'kiosk.ui')
+        winicon=os.path.join(self.scriptdir,'images/kiosk.png')
         
         self.ui = loadUi(uifile)        # load UI
         self.ui.setWindowIcon(QIcon(winicon))
@@ -29,12 +29,13 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.start.clicked.connect(self.onStartConfig)
 
         self.configpath = "kiosk"
+        self.lastprofilepath = os.path.join(self.scriptdir,'profiles/last.profile')
         self.configfiles = []
         self.restrictionsdict = {}  #this dict will contain a list of all keys for evey kiosk section
         
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
-     
+        self.loadLastconfig()   #reads profiles/last.profile and activates the checkboxes
        
         
     
@@ -76,14 +77,20 @@ class MeinDialog(QtWidgets.QDialog):
 
 
     def createTabs(self):
+        """
+        Generates a tab in the UI for every found configuration .kiosk file and 
+        triggers createGrid() in order to fill the tabs with widgets for all restriction keys
+        """
         for configfilename in self.configfiles:
             generalgrid,groupname,sectionicon = self.createGrid(configfilename)
             tab = QtWidgets.QWidget()
             tab.setLayout(generalgrid)
             self.ui.tabWidget.addTab(tab, sectionicon, groupname)
             
-            for restriction in self.restrictionsdict[configfilename]:
-                print(restriction.rcheckbox.isChecked() )
+            
+            #we need to parse a profile file here and restore the checkbox states
+            #for restriction in self.restrictionsdict[configfilename]:
+                #print(restriction.rcheckbox.isChecked() )
             
 
     
@@ -148,7 +155,10 @@ class MeinDialog(QtWidgets.QDialog):
                 itemkey = sectionkey
                 
                 itemname = QtWidgets.QLabel()
-                itemname.setText("<b>%s</b>" % sectionname)
+                itemname.setText("%s" % sectionname)
+                itemname.font=QFont()
+                itemname.font.setBold(True)
+                itemname.setFont(itemname.font)
                 itemname.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Expanding)
                 itemname.setAlignment(Qt.AlignLeft)
                 itemname.setStyleSheet("margin-top:1px;")
@@ -175,6 +185,8 @@ class MeinDialog(QtWidgets.QDialog):
                 widget.setLayout(grid)
                 widgets.append(widget)  #add the finalized widget to the widgets list
                 
+                
+                #collect and store every created widget as attribute of a  restriction-object in the restrictionsdict
                 restriction = Restriction(itemtype, itemkey, itemname, itemdesc, itemcheckBox)
                 self.restrictionsdict[configfilename].append(restriction)  #append to list in section of the dictionary
 
@@ -197,14 +209,56 @@ class MeinDialog(QtWidgets.QDialog):
     
     
     def onStartConfig(self):
-        print("nothing yet")
-    
-    
+        """
+        parses all widgets and writes the state of the checkboxes into "last.profile" 
+        then writes the plasma configuration files and reloads plasma desktop  
+        """
+        fileobject = open(self.lastprofilepath,"w")
+        
+        activerestrictions = []
+        
+        for configfilename in self.configfiles:
+            print("Restrictions active in %s" % configfilename)
+            
+            for restriction in self.restrictionsdict[configfilename]:
+                if restriction.rcheckbox.isChecked():
+                    print(restriction.rname.text() )
+                    activerestrictions.append(restriction.rname.text() )
+           
+        
+        #generate profile file text
+        profileconfigcontent = ""
+        for activerestriction in activerestrictions:
+            profileconfigcontent += "%s\n" % activerestriction
+        
+        print(profileconfigcontent)
+        fileobject.write(profileconfigcontent)
+        
+        
+        #write plasma Config
+        
+        #reload desktop
+        
+        
+    def loadLastconfig(self):
+        with open(self.lastprofilepath) as fileobject:
+            lastconfig = fileobject.readlines()
+        # remove whitespace characters like `\n` at the end of each line
+        lastconfig = [x.strip() for x in lastconfig] 
+        
+        for configfilename in self.configfiles:
+            for restriction in self.restrictionsdict[configfilename]:
+                if restriction.rname.text() in lastconfig:
+                    restriction.rcheckbox.setChecked(True)
+  
+            
+        
     def onAbbrechen(self):    # Exit button
         self.ui.close()
         os._exit(0)
 
 
+    
 
 
 class Restriction(object):

@@ -3,11 +3,17 @@ Icon=preferences-desktop-plasma
 Name=Systemsettings
 Description=Disable important parts of the Systemsettings
 
-[Action-1]
+
+
+
+[Action-3]
 Type=module
-Key=formats.desktop
-Name=Lock down formats settings
-Description=When the formats settings are locked down the user can no longer change them.
+Key=device_automounter_kcm.desktop
+Name=Lock down automounter settings
+Description=When the automounter settings are locked down the user can no longer change them.
+
+
+
 
 
 [Action-2]
@@ -15,3 +21,12 @@ Type=module
 Key=formats.desktop
 Name=Lock down formats settings
 Description=When the formats settings are locked down the user can no longer change them.
+
+
+[Action-1]
+Type=module
+Key=clock.desktop
+Name=Lock down clock settings
+Description=When the clock settings are locked down the user can no longer change them.
+
+
