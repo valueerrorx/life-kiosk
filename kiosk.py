@@ -59,9 +59,14 @@ class MeinDialog(QtWidgets.QDialog):
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
         self.loadLastconfig()   #reads profiles/last.profile and activates the checkboxes
        
+        #check for root permissions 
         if os.geteuid() != 0:
             print ("You need root access in order to activate KIOSK mode")
-            onAbbrechen()
+            command = "kdesudo %s" % (os.path.abspath(__file__))
+            self.ui.close()
+            os.system(command)
+            os._exit(0)
+          
             
 
     def getConfigFiles(self):
