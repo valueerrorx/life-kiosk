@@ -5,19 +5,19 @@ Description=Options for file browsing using Dolphin or Konqueror
 
 
 [Action-1]
-Type=action restriction
+Type=actionrestriction
 Key=action/properties
 Name=Disable Properties in context menu
 Description=This option can be used to disable the 'Properties' option in the context menu for files.
 
 [Action-2]
-Type=action restriction
+Type=actionrestriction
 Key=action/openwith
 Name=Disable Open With action
 Description=This option can be used to disable the 'Open With' menu option.
 
 [Action-3]
-Type=action restriction
+Type=actionrestriction
 Key=action/openintab
 Name=Disable Open In New Tab action
 Description=This option can be used to disable the 'Open In New Tab' menu option.

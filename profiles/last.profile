@@ -1,4 +1,5 @@
-Lock down automounter settings
-Lock down formats settings
-Lock down style settings
-Lock down color settings
+actionrestriction:action/kwin_rmb
+actionrestriction:action/properties
+actionrestriction:action/openwith
+module:device_automounter_kcm.desktop
+module:formats.desktop

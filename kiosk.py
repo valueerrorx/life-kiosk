@@ -14,6 +14,7 @@ from PyQt5.uic import loadUi
 import ConfigParser
 import sys
 import os
+import subprocess
 
 class MeinDialog(QtWidgets.QDialog):
   
@@ -28,10 +29,16 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.exit.clicked.connect(self.onAbbrechen)        # setup Slots
         self.ui.start.clicked.connect(self.onStartConfig)
 
+
+        self.USER = subprocess.check_output("logname", shell=True).rstrip()
+        self.USER_HOME_DIR = os.path.join("/home", str(self.USER))
         self.configpath = "kiosk"
+        self.plasmaconfigglobal = "/etc/xdg/kdeglobals"
         self.lastprofilepath = os.path.join(self.scriptdir,'profiles/last.profile')
         self.configfiles = []
-        self.restrictionsdict = {}  #this dict will contain a list of all keys for evey kiosk section
+        self.restrictionsdict = {}  #this dict will contain a list of all widgets for all keys for evey kiosk section
+        self.activerestrictions = {"module" : [] , "actionrestriction" : [], "url" : [] }  #this dict will contain active restrictionkeys by type
+        
         
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
@@ -56,7 +63,7 @@ class MeinDialog(QtWidgets.QDialog):
     def ConfigSectionMap(self, section):
         """ 
         creates a dictionary of the specified config section
-        returns: dict1
+        :return dict1: dict
         """
         dict1 = {}
         options = self.Config.options(section)
@@ -86,12 +93,7 @@ class MeinDialog(QtWidgets.QDialog):
             tab = QtWidgets.QWidget()
             tab.setLayout(generalgrid)
             self.ui.tabWidget.addTab(tab, sectionicon, groupname)
-            
-            
-            #we need to parse a profile file here and restore the checkbox states
-            #for restriction in self.restrictionsdict[configfilename]:
-                #print(restriction.rcheckbox.isChecked() )
-            
+
 
     
     
@@ -100,7 +102,10 @@ class MeinDialog(QtWidgets.QDialog):
         this section reads the config.kiosk file 
         and creates tabs for every configfile and qtwidgets for every action 
         in the config file
-        returns: maingrid, groupname, sectionicon
+        :param configfilename: string
+        :return maingrid: qlayout
+        :return groupname: string
+        :return sectionicon:  qicon
         """
         self.Config = ConfigParser.ConfigParser()
         configfilepath = os.path.join(self.configpath,configfilename)
@@ -213,46 +218,108 @@ class MeinDialog(QtWidgets.QDialog):
         parses all widgets and writes the state of the checkboxes into "last.profile" 
         then writes the plasma configuration files and reloads plasma desktop  
         """
+        #save the current configuration
+        self.saveLastconfig()        #fills self.activerestrictions and saves all keys to last.profile
+        
+        #write plasma Config
+        self.savePlasmaConfig()
+        
+        
+        
+        
+        #reload desktop
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    def saveLastconfig(self):
+        """
+        parses the ui widgets and stores the current settings into last.profile
+        gererates a dictionary containing all checked restriction keys and the according type
+        
+        """
         fileobject = open(self.lastprofilepath,"w")
+        self.activerestrictions = {"module" : [] , "actionrestriction" : [] }
         
-        activerestrictions = []
-        
+        #generate activerestrictions dictionary
         for configfilename in self.configfiles:
-            print("Restrictions active in %s" % configfilename)
-            
             for restriction in self.restrictionsdict[configfilename]:
                 if restriction.rcheckbox.isChecked():
-                    print(restriction.rname.text() )
-                    activerestrictions.append(restriction.rname.text() )
+                    self.activerestrictions[restriction.rtype].append(restriction.rkey )
            
         
         #generate profile file text
         profileconfigcontent = ""
-        for activerestriction in activerestrictions:
-            profileconfigcontent += "%s\n" % activerestriction
         
-        print(profileconfigcontent)
+        for section in self.activerestrictions:
+            for activerestriction in self.activerestrictions[section]:
+                profileconfigcontent += "%s:%s\n" % (section, activerestriction)
+
         fileobject.write(profileconfigcontent)
+        print("last.config written")
+     
         
         
-        #write plasma Config
         
-        #reload desktop
         
         
     def loadLastconfig(self):
         with open(self.lastprofilepath) as fileobject:
             lastconfig = fileobject.readlines()
         # remove whitespace characters like `\n` at the end of each line
-        lastconfig = [x.strip() for x in lastconfig] 
         
+        lastconfigkeys = []
+        for entry in lastconfig:
+            entry = entry.strip().split(":")
+            self.activerestrictions[entry[0]].append(entry[1])
+
         for configfilename in self.configfiles:
             for restriction in self.restrictionsdict[configfilename]:
-                if restriction.rname.text() in lastconfig:
-                    restriction.rcheckbox.setChecked(True)
-  
+                for activerestriction in self.activerestrictions:
+                    if restriction.rkey in self.activerestrictions[activerestriction]:
+                        restriction.rcheckbox.setChecked(True)
+
+
+
+
+
+    def savePlasmaConfig(self):
+        
+        kdeglobalstext = ""
+        for section in self.activerestrictions:
+            if section is "actionrestriction":
+                kdeglobalstext += "\n[KDE Action Restrictions][$i]\n"
+                for restriction in self.activerestrictions[section]:
+                    kdeglobalstext += "%s = false \n" % (restriction )
+
+            if section is "module":
+                kdeglobalstext += "\n[KDE Control Module Restrictions][$i]\n"
+                for restriction in self.activerestrictions[section]:
+                    kdeglobalstext += "%s = false \n" % (restriction )
+                
+            if section is "url":   
+                kdeglobalstext += "\n[KDE URL Restrictions][$i]\n"
+                for restriction in self.activerestrictions[section]:
+                    kdeglobalstext += "%s = false \n" % (restriction )
+              
+              
+        print(kdeglobalstext)
             
         
+        
+
+
+
+
+
+
+
     def onAbbrechen(self):    # Exit button
         self.ui.close()
         os._exit(0)
