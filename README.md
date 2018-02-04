@@ -6,7 +6,7 @@ This application is written in Python, PyQt5 and Twisted.
 
 The applications allows to lock down plasma desktop, filemanagmenet and other important settings.
 
-State:  planning / pre-alpha 
+State:  Alpha (UI is working but NONE of the restrictions have been tested)
 
 The .kiosk files contain all the available action restrictions, url restrictions, control module restrictions.
 The UI autogenerates itself by reading those config files. Therefore this application should be very easy to maintain.
