@@ -23,7 +23,7 @@ Example:
 
 
 
-![Image of life-kiosk](http://life-edu.eu/images/life-kiosk-1.png)
+![Image of life-kiosk](http://life-edu.eu/images/life-kiosk1.gif)
 
 
 

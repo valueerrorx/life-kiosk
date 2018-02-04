@@ -174,7 +174,7 @@
       <item>
        <widget class="QPushButton" name="start">
         <property name="text">
-         <string>Apply</string>
+         <string>Activate KIOSK Mode</string>
         </property>
        </widget>
       </item>
