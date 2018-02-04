@@ -8,7 +8,7 @@
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.uic import loadUi
 
 import ConfigParser
@@ -46,6 +46,7 @@ class MeinDialog(QtWidgets.QDialog):
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
         self.USER_HOME_DIR = os.path.join("/home", str(self.USER))
         self.configpath = "kiosk"
+        self.profilepath = "profiles"
         self.plasmaconfigglobal = "/etc/xdg/kdeglobals"
         self.lastprofilepath = os.path.join(self.scriptdir,'profiles/last.profile')
         self.configfiles = []
@@ -54,7 +55,10 @@ class MeinDialog(QtWidgets.QDialog):
         
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
-        self.loadLastconfig()   #reads profiles/last.profile and activates the checkboxes
+        self.loadProfile(self.lastprofilepath)   #reads profiles/last.profile and activates the checkboxes
+        
+        self.getProfiles() 
+        
         
         #check for root permissions 
         if os.geteuid() != 0:
@@ -64,7 +68,39 @@ class MeinDialog(QtWidgets.QDialog):
             os.system(command)
             os._exit(0)
           
-            
+    
+    def getProfiles(self):
+        """
+        scans for .profile files (except last.profile) and adds a widget in the profile listview
+        """
+        for root, dirs, files in os.walk(self.profilepath):
+            for profilefilename in files:
+                if profilefilename.endswith((".profile")) and profilefilename != "last.profile":
+                    item = QtWidgets.QListWidgetItem()
+                    item.setSizeHint(QSize(40, 40));
+                    item.name = QtWidgets.QLabel()
+                    item.name.setText("%s" % os.path.splitext(profilefilename)[0] )
+                    
+                    icon = QIcon.fromTheme("lock")
+                    item.icon = QtWidgets.QLabel()
+                    item.icon.setPixmap(QPixmap(icon.pixmap(28)))
+                    verticalSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
+
+                    
+                    grid = QtWidgets.QGridLayout()
+                    #grid.setColumnMinimumWidth(1,400)
+                    grid.addWidget(item.name, 0, 1)
+                    grid.addWidget(item.icon, 0, 0)
+                    grid.addItem(verticalSpacer, 0, 2)
+                    
+                    widget = QtWidgets.QWidget()
+                    widget.setLayout(grid)
+                    
+                    self.ui.profileview.addItem(item) 
+                    self.ui.profileview.setItemWidget(item, widget)
+    
+
+
 
     def getConfigFiles(self):
         """
@@ -262,7 +298,7 @@ class MeinDialog(QtWidgets.QDialog):
      
         
         
-    def loadLastconfig(self):
+    def loadProfile(self, profilefile):
         """
         reads last.profile and resets the ui state
         """
@@ -338,11 +374,10 @@ class MeinDialog(QtWidgets.QDialog):
         """
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
-
         msg.setText("Kiosk Mode")
         msg.setInformativeText("Do you want to activate the Kiosk Settings now ?")
         msg.setWindowTitle("LiFE Kiosk")
-        msg.setDetailedText("This will save the following configuration to %s and restart the desktop:\n %s" % (self.plasmaconfigglobal,configtext ))
+        msg.setDetailedText("This will save the following configuration to \n%s \nand restart the desktop:\n %s" % (self.plasmaconfigglobal,configtext ))
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
       
         retval = msg.exec_()   # 16384 = yes, 65536 = no
