@@ -45,6 +45,7 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.load.clicked.connect(self.loadProfile)
         self.ui.unload.clicked.connect(self.unloadProfile)
         self.ui.save.clicked.connect(self.saveProfile)
+        self.ui.saveas.clicked.connect(self.saveasProfile)
         
 
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
@@ -313,6 +314,10 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.status.setText("Configuration saved to %s " % profilename)
         print("%s written" % profilename)
      
+     
+     
+    def saveasProfile(self):
+        item, ok = QInputDialog.getItem(self, "select input dialog", "list of languages", items, 0, False)
         
         
     def loadProfile(self, profilename=None):
