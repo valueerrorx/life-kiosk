@@ -42,6 +42,9 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.setWindowIcon(QIcon(winicon))
         self.ui.exit.clicked.connect(self.onAbbrechen)        # setup Slots
         self.ui.start.clicked.connect(self.onStartConfig)
+        self.ui.load.clicked.connect(self.loadProfile)
+        self.ui.unload.clicked.connect(self.unloadProfile)
+        
 
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
         self.USER_HOME_DIR = os.path.join("/home", str(self.USER))
@@ -298,26 +301,65 @@ class MeinDialog(QtWidgets.QDialog):
      
         
         
-    def loadProfile(self, profilefile):
+    def loadProfile(self, profilefile=None):
         """
-        reads last.profile and resets the ui state
+        reads given profile and resets the ui state
+        if no profile file is given it searches for the selected profile file from the list
         """
-        with open(self.lastprofilepath) as fileobject:
-            lastconfig = fileobject.readlines()
-        # remove whitespace characters like `\n` at the end of each line
+        if not profilefile:
+            try:
+                profilename = self.ui.profileview.currentItem().name.text()
+            except:
+                print("nothing selected")
+                self.ui.status.setText("No profile selected")
+                return
         
-        lastconfigkeys = []
+            #recreate filename
+            profilename += ".profile"
+            profilefile = os.path.join(self.scriptdir,self.profilepath,profilename)
+            
+        #test if file exists   
+        if not os.path.isfile(profilefile):
+            self.ui.status.setText("profile file missing")
+            return
+            
+        #read profilefile line by line
+        with open(profilefile) as fileobject:
+            lastconfig = fileobject.readlines()
+
         for entry in lastconfig:
             entry = entry.strip().split(":")
-            self.activerestrictions[entry[0]].append(entry[1])
-
+            if entry[0] == "" or entry[1] == "":  #check if proflie file is empty
+                self.ui.status.setText("Selected profile is empty")
+                return
+            else:
+                self.activerestrictions[entry[0]].append(entry[1])
+        # activate loaded configuration (select checkboxes)
         for configfilename in self.configfiles:
             for restriction in self.restrictionsdict[configfilename]:
                 for activerestriction in self.activerestrictions:
                     if restriction.rkey in self.activerestrictions[activerestriction]:
                         restriction.rcheckbox.setChecked(True)
+                        
+        if "last" in profilefile:
+            self.ui.status.setText("Last configuration loaded")
 
 
+
+
+
+    def unloadProfile(self):
+        for configfilename in self.configfiles:
+            for restriction in self.restrictionsdict[configfilename]:
+                restriction.rcheckbox.setChecked(False)
+                
+        self.ui.status.setText("Deselected all restrictions")
+        
+        
+        
+        
+        
+        
 
     def createPlasmaConfig(self):
         """
