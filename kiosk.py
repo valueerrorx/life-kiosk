@@ -44,6 +44,7 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.start.clicked.connect(self.onStartConfig)
         self.ui.load.clicked.connect(self.loadProfile)
         self.ui.unload.clicked.connect(self.unloadProfile)
+        self.ui.save.clicked.connect(self.saveProfile)
         
 
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
@@ -55,10 +56,12 @@ class MeinDialog(QtWidgets.QDialog):
         self.configfiles = []
         self.restrictionsdict = {}  #this dict will contain a list of all widgets for all keys for evey kiosk section
         self.activerestrictions = {"module" : [] , "actionrestriction" : [], "url" : [] }  #this dict will contain active restrictionkeys by type
+        self.loadedProfile = "last.profile"
+        
         
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
-        self.loadProfile(self.lastprofilepath)   #reads profiles/last.profile and activates the checkboxes
+        self.loadProfile(self.loadedProfile)   #reads profiles/last.profile and activates the checkboxes
         
         self.getProfiles() 
         
@@ -269,18 +272,28 @@ class MeinDialog(QtWidgets.QDialog):
         parses all widgets and writes the state of the checkboxes into "last.profile" 
         then writes the plasma configuration files and reloads plasma desktop  
         """
-        self.saveLastconfig()        #fills self.activerestrictions and saves all keys to last.profile
+        self.saveProfile(self.loadedProfile)        #fills self.activerestrictions and saves all keys to last.profile
         configtext = self.createPlasmaConfig()  #prepare config text
         self.showDialog(configtext)   #ask for confirmation
     
         
-    def saveLastconfig(self):
+    def saveProfile(self, profilename=None):
         """
         parses the ui widgets and stores the current settings into last.profile
         gererates a dictionary containing all checked restriction keys and the according type
         
         """
-        fileobject = open(self.lastprofilepath,"w")
+        if not profilename:
+            try:
+                profilename = self.ui.profileview.currentItem().name.text()
+                profilename += ".profile"   # we stripped the file extension for the wiget .. add it again
+            except:
+                self.ui.status.setText("No profile selected")
+                return
+        
+        profilefile = os.path.join(self.scriptdir,self.profilepath,profilename)
+        
+        fileobject = open(profilefile,"w")
         self.activerestrictions = {"module" : [] , "actionrestriction" : [] }
         
         #generate activerestrictions dictionary
@@ -297,31 +310,37 @@ class MeinDialog(QtWidgets.QDialog):
                 profileconfigcontent += "%s:%s\n" % (section, activerestriction)
 
         fileobject.write(profileconfigcontent)
-        print("last.config written")
+        self.ui.status.setText("Configuration saved to %s " % profilename)
+        print("%s written" % profilename)
      
         
         
-    def loadProfile(self, profilefile=None):
+    def loadProfile(self, profilename=None):
         """
         reads given profile and resets the ui state
         if no profile file is given it searches for the selected profile file from the list
+        :param profilename : string
         """
-        if not profilefile:
+        if not profilename:
             try:
                 profilename = self.ui.profileview.currentItem().name.text()
+                profilename += ".profile"   # we stripped the file extension for the wiget .. add it again
             except:
                 print("nothing selected")
                 self.ui.status.setText("No profile selected")
                 return
         
-            #recreate filename
-            profilename += ".profile"
-            profilefile = os.path.join(self.scriptdir,self.profilepath,profilename)
+        #recreate filepath 
+        profilefile = os.path.join(self.scriptdir,self.profilepath,profilename)
             
         #test if file exists   
         if not os.path.isfile(profilefile):
             self.ui.status.setText("profile file missing")
             return
+        else:
+            self.loadedProfile = profilename
+        
+        
             
         #read profilefile line by line
         with open(profilefile) as fileobject:
@@ -341,8 +360,8 @@ class MeinDialog(QtWidgets.QDialog):
                     if restriction.rkey in self.activerestrictions[activerestriction]:
                         restriction.rcheckbox.setChecked(True)
                         
-        if "last" in profilefile:
-            self.ui.status.setText("Last configuration loaded")
+      
+        self.ui.status.setText("%s configuration loaded" % profilename)
 
 
 
@@ -425,7 +444,7 @@ class MeinDialog(QtWidgets.QDialog):
         retval = msg.exec_()   # 16384 = yes, 65536 = no
         if str(retval) == "16384":
             self.savePlasmaConfig(configtext)
-            self.reloadDesktop()
+            #self.reloadDesktop()
 
         
 
