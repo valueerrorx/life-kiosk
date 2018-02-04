@@ -65,8 +65,7 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="icon">
-       <iconset theme="lock">
-        <normaloff>.</normaloff>.</iconset>
+       <iconset theme="adjustlevels"/>
       </attribute>
       <attribute name="title">
        <string>KIOSK Configuration</string>
@@ -98,37 +97,133 @@
            <widget class="QWidget" name="widget_3" native="true">
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <widget class="QPushButton" name="unload">
+              <widget class="QToolButton" name="unload">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Unload Profile</string>
                </property>
+               <property name="icon">
+                <iconset theme="archive-remove"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="load">
+              <widget class="QToolButton" name="load">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Load selected Profile</string>
                </property>
+               <property name="icon">
+                <iconset theme="quickopen-file"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="remove">
+              <widget class="QToolButton" name="remove">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Delete selected Profile</string>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="save">
-               <property name="text">
-                <string>Save Profile</string>
+               <property name="icon">
+                <iconset theme="trash-empty"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="saveas">
+              <widget class="QToolButton" name="save">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string>Save Profile</string>
+               </property>
+               <property name="icon">
+                <iconset theme="document-save"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="saveas">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
                <property name="text">
                 <string>Save Profile as</string>
+               </property>
+               <property name="icon">
+                <iconset theme="document-save-as"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
                </property>
               </widget>
              </item>
@@ -169,12 +264,18 @@
         <property name="text">
          <string>Exit</string>
         </property>
+        <property name="icon">
+         <iconset theme="list-remove"/>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="start">
         <property name="text">
          <string>Activate KIOSK Mode</string>
+        </property>
+        <property name="icon">
+         <iconset theme="security-high"/>
         </property>
        </widget>
       </item>
