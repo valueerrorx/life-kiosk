@@ -33,6 +33,8 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.save.clicked.connect(self.saveProfile)
         self.ui.saveas.clicked.connect(self.saveasProfile)
         self.ui.remove.clicked.connect(self.deleteProfile)
+        self.ui.delurl.clicked.connect(self.deleteURL)
+        self.ui.addurl.clicked.connect(self.addURL)
 
         #setup some variables, dicts, lists 
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
@@ -43,7 +45,7 @@ class MeinDialog(QtWidgets.QDialog):
         self.lastprofilepath = os.path.join(self.scriptdir,'profiles/last.profile')
         self.configfiles = []
         self.restrictionsdict = {}  #this dict will contain a list of all widgets for all keys for evey kiosk section
-        self.activerestrictions = {"module" : [] , "actionrestriction" : [], "url" : [] }  #this dict will contain active restrictionkeys by type
+        self.activerestrictions = {"module" : [] , "actionrestriction" : [] , "url" : []}  #this dict will contain active restrictionkeys by type
         self.loadedProfile = "last.profile"
         
         #autobuild userinterface tabs and lists
@@ -59,7 +61,76 @@ class MeinDialog(QtWidgets.QDialog):
             self.ui.close()
             os.system(command)
             os._exit(0)
+
+
+
+    def addURL(self, folder=None, ischecked="False"):
+        """
+        adds an URL to the list view
+        :param folder : string
+        """
+        
+        if not folder:
+            print("here")
+            folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+            if folder == "":
+                return
+      
+        item = QtWidgets.QListWidgetItem()
+        item.setSizeHint(QSize(40, 40));
+        item.name = QtWidgets.QLabel()
+        item.name.setText("%s" % folder)
+        
+        item.hint = QtWidgets.QLabel()
+        item.hint.setText("Allow access")
           
+        icon = QIcon.fromTheme("folder")
+        item.icon = QtWidgets.QLabel()
+        item.icon.setPixmap(QPixmap(icon.pixmap(28)))
+        
+        item.checkbox = QtWidgets.QCheckBox()
+        item.checkbox.setStyleSheet("margin-left:-2px;")
+        if ischecked == "True":
+            item.checkbox.setChecked(True)
+        
+        verticalSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
+
+        
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(item.icon, 0, 0)
+        grid.addWidget(item.name, 0, 1)
+        grid.addItem(verticalSpacer, 0, 2)
+        grid.addWidget(item.checkbox, 0, 3)
+        grid.addWidget(item.hint, 0, 4)
+                   
+        widget = QtWidgets.QWidget()
+        widget.setLayout(grid)
+        self.ui.urllist.addItem(item) 
+        self.ui.urllist.setItemWidget(item, widget)
+
+
+    def deleteURL(self):
+        """
+        deletes the selected URL from the list view
+        """
+        try:
+            urlrow = self.ui.urllist.selectedIndexes()[0].row()
+        except:
+            return
+
+        self.ui.urllist.takeItem(urlrow)
+        
+        
+
+
+
+
+
+
+
+
+
+
     
     def getProfiles(self):
         """
@@ -279,24 +350,41 @@ class MeinDialog(QtWidgets.QDialog):
         profilefile = os.path.join(self.scriptdir,self.profilepath,profilename)
         
         fileobject = open(profilefile,"w")
-        self.activerestrictions = {"module" : [] , "actionrestriction" : [] }
         
+        #clear activerestrictions
+        self.activerestrictions = {"module" : [] , "actionrestriction" : []  , "url" : []}   
         #generate activerestrictions dictionary
         for configfilename in self.configfiles:
             for restriction in self.restrictionsdict[configfilename]:
                 if restriction.rcheckbox.isChecked():
                     self.activerestrictions[restriction.rtype].append(restriction.rkey )
 
+
+        items = []
+        for index in xrange(self.ui.urllist.count()):
+            items.append(self.ui.urllist.item(index))
+            
+        for item in items:
+            rkey = "%s##%s" % (item.name.text(),item.checkbox.isChecked() )
+            self.activerestrictions["url"].append(rkey )
+            
+
+
         #generate profile file text
         profileconfigcontent = ""
         
+        #generate profile-file content from self.activerestrictions
         for section in self.activerestrictions:
             for activerestriction in self.activerestrictions[section]:
-                profileconfigcontent += "%s:%s\n" % (section, activerestriction)
+                profileconfigcontent += "%s::%s\n" % (section, activerestriction)
 
         fileobject.write(profileconfigcontent)
         self.ui.status.setText("Configuration saved to %s " % profilename)
         self.getProfiles()   #re-read profiles and populate list
+
+
+
+
 
 
 
@@ -309,6 +397,17 @@ class MeinDialog(QtWidgets.QDialog):
             self.saveProfile(profilename)
         else:
             return
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -338,20 +437,27 @@ class MeinDialog(QtWidgets.QDialog):
         else:
             self.loadedProfile = profilename
         
-        
+        # clear all current settings
+        self.unloadProfile()
             
         #read profilefile line by line
         with open(profilefile) as fileobject:
             lastconfig = fileobject.readlines()
 
+        #split entries and re-fill self.activerestrictions
         for entry in lastconfig:
-            entry = entry.strip().split(":")
+            entry = entry.strip().split("::")
             if entry[0] == "" or entry[1] == "":  #check if proflie file is empty
                 self.ui.status.setText("Selected profile is empty")
                 return
             else:
                 self.activerestrictions[entry[0]].append(entry[1])
-        # activate loaded configuration (select checkboxes)
+                
+            if entry[0] == "url":
+                folderinfo = entry[1].split("##")
+                self.addURL(folderinfo[0], folderinfo[1])
+                
+        # activate loaded configuration (select checkboxes) by reading self.activerestrictions
         for configfilename in self.configfiles:
             for restriction in self.restrictionsdict[configfilename]:
                 for activerestriction in self.activerestrictions:
@@ -369,7 +475,8 @@ class MeinDialog(QtWidgets.QDialog):
         for configfilename in self.configfiles:
             for restriction in self.restrictionsdict[configfilename]:
                 restriction.rcheckbox.setChecked(False)
-                
+        self.ui.urllist.clear()    
+        
         self.ui.status.setText("Deselected all restrictions")
 
 
@@ -420,18 +527,35 @@ class MeinDialog(QtWidgets.QDialog):
             if section is "actionrestriction":
                 kdeglobalstext += "\n[KDE Action Restrictions][$i]\n"
                 for restriction in self.activerestrictions[section]:
-                    kdeglobalstext += "%s = false \n" % (restriction )
+                    kdeglobalstext += "%s = false\n" % (restriction )
 
             if section is "module":
                 kdeglobalstext += "\n[KDE Control Module Restrictions][$i]\n"
                 for restriction in self.activerestrictions[section]:
-                    kdeglobalstext += "%s = false \n" % (restriction )
+                    kdeglobalstext += "%s = false\n" % (restriction )
                 
-            if section is "url":   
+            if section is "url":  
+                entries = len(self.activerestrictions[section])   #one for open and one for list
+                rulecount = entries * 2
+                
                 kdeglobalstext += "\n[KDE URL Restrictions][$i]\n"
-                for restriction in self.activerestrictions[section]:
-                    kdeglobalstext += "%s = false \n" % (restriction )
+                kdeglobalstext += "rule_count=%s\n" %(rulecount)
+                print self.activerestrictions[section]
+                
+                counter = 1
+                for i in range(entries):
+                    folderinfo = self.activerestrictions[section][i].split("##")
+                    if folderinfo[1] == "True":
+                        access = "true"
+                    else:
+                        access = "false"
                     
+                    kdeglobalstext += "rule_%s=open,,,,file,,%s,%s\n" %(counter,folderinfo[0],access)
+                    counter+=1
+                    kdeglobalstext += "rule_%s=list,,,,file,,%s,%s\n" %(counter,folderinfo[0],access)
+                    counter+=1
+
+
         return kdeglobalstext
     
     

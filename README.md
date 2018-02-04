@@ -27,7 +27,7 @@ Please test and report bugs and feature requests here on github (new issue)
 None of the restriction keys are tested yet. I will check most of them eventually.
 
 
-![Image of life-kiosk](http://life-edu.eu/images/life-kiosk1.gif)
+![Image of life-kiosk](http://life-edu.eu/images/life-kiosk2.gif)
 
 
 

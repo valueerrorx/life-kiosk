@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>950</width>
     <height>600</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>800</width>
+    <width>950</width>
     <height>600</height>
    </size>
   </property>
@@ -35,7 +35,7 @@
   <property name="modal">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="font">
@@ -63,12 +63,18 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
      <widget class="QWidget" name="tab">
       <attribute name="icon">
        <iconset theme="adjustlevels"/>
       </attribute>
       <attribute name="title">
-       <string>KIOSK Configuration</string>
+       <string>Profiles</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -78,7 +84,11 @@
            <widget class="QWidget" name="widget_4" native="true">
             <layout class="QVBoxLayout" name="verticalLayout_4">
              <item>
-              <widget class="QListWidget" name="profileview"/>
+              <widget class="QListWidget" name="profileview">
+               <property name="cursor" stdset="0">
+                <cursorShape>ArrowCursor</cursorShape>
+               </property>
+              </widget>
              </item>
              <item>
               <widget class="QLabel" name="status">
@@ -108,7 +118,7 @@
                 <string>Unload Profile</string>
                </property>
                <property name="icon">
-                <iconset theme="archive-remove"/>
+                <iconset theme="document-close"/>
                </property>
                <property name="iconSize">
                 <size>
@@ -248,6 +258,117 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="icon">
+       <iconset theme="folder-locked"/>
+      </attribute>
+      <attribute name="title">
+       <string>URL Restrictions</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QWidget" name="widget_5" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QWidget" name="widget_7" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="QListWidget" name="urllist">
+               <property name="sortingEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_6" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <widget class="QToolButton" name="delurl">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Remove selected URL</string>
+               </property>
+               <property name="icon">
+                <iconset theme="document-close"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="addurl">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Add URL Restriction</string>
+               </property>
+               <property name="icon">
+                <iconset theme="document-new"/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -278,6 +399,19 @@
          <iconset theme="security-high"/>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
