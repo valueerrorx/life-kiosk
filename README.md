@@ -2,7 +2,7 @@
 
 A simple KIOSK tool for KDE Plasma 5
 
-This application is written in Python, PyQt5 and Twisted.
+This application is written in Python, PyQt5.
 
 The applications allows to lock down plasma desktop, filemanagmenet and other important settings.
 
@@ -21,6 +21,10 @@ Example:
 * Description=The Window Manager context menu is normally shown when Alt-F3 is pressed or when the menu button on the window frame is pressed
 
 
+Installation:
+Just download the repository as zip file, extract and run kiosk.py
+Please test and report bugs and feature requests here on github (new issue)
+None of the restriction keys are tested yet. I will check most of them eventually.
 
 
 ![Image of life-kiosk](http://life-edu.eu/images/life-kiosk1.gif)
