@@ -8,27 +8,13 @@
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtCore import Qt, QSize, QRect, QPoint
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.uic import loadUi
 
 import ConfigParser
 import sys
 import os
 import subprocess
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
 
 
 class MeinDialog(QtWidgets.QDialog):
@@ -46,8 +32,9 @@ class MeinDialog(QtWidgets.QDialog):
         self.ui.unload.clicked.connect(self.unloadProfile)
         self.ui.save.clicked.connect(self.saveProfile)
         self.ui.saveas.clicked.connect(self.saveasProfile)
-        
+        self.ui.remove.clicked.connect(self.deleteProfile)
 
+        #setup some variables, dicts, lists 
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
         self.USER_HOME_DIR = os.path.join("/home", str(self.USER))
         self.configpath = "kiosk"
@@ -59,13 +46,11 @@ class MeinDialog(QtWidgets.QDialog):
         self.activerestrictions = {"module" : [] , "actionrestriction" : [], "url" : [] }  #this dict will contain active restrictionkeys by type
         self.loadedProfile = "last.profile"
         
-        
+        #autobuild userinterface tabs and lists
         self.getConfigFiles()   # fills self.configfiles with the name of the files that contain all kisok keys and creates a section in self.configoptions for every file
         self.createTabs()  # builds the UI - reads the configfiles and creates widgets for every option
         self.loadProfile(self.loadedProfile)   #reads profiles/last.profile and activates the checkboxes
-        
         self.getProfiles() 
-        
         
         #check for root permissions 
         if os.geteuid() != 0:
@@ -80,10 +65,7 @@ class MeinDialog(QtWidgets.QDialog):
         """
         scans for .profile files (except last.profile) and adds a widget in the profile listview
         """
-        
-        
         self.ui.profileview.clear()
-         
         for root, dirs, files in os.walk(self.profilepath):
             for profilefilename in files:
                 if profilefilename.endswith((".profile")) and profilefilename != "last.profile":
@@ -97,7 +79,6 @@ class MeinDialog(QtWidgets.QDialog):
                     item.icon.setPixmap(QPixmap(icon.pixmap(28)))
                     verticalSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
 
-                    
                     grid = QtWidgets.QGridLayout()
                     #grid.setColumnMinimumWidth(1,400)
                     grid.addWidget(item.name, 0, 1)
@@ -156,6 +137,7 @@ class MeinDialog(QtWidgets.QDialog):
             tab.setLayout(generalgrid)
             self.ui.tabWidget.addTab(tab, sectionicon, groupname)
 
+    
     
     def createGrid(self, configfilename):
         """
@@ -250,7 +232,6 @@ class MeinDialog(QtWidgets.QDialog):
                 widget.setLayout(grid)
                 widgets.append(widget)  #add the finalized widget to the widgets list
                 
-                
                 #collect and store every created widget as attribute of a  restriction-object in the restrictionsdict
                 restriction = Restriction(itemtype, itemkey, itemname, itemdesc, itemcheckBox)
                 self.restrictionsdict[configfilename].append(restriction)  #append to list in section of the dictionary
@@ -266,8 +247,6 @@ class MeinDialog(QtWidgets.QDialog):
 
     
     
-    
-    
 
     
     
@@ -281,7 +260,8 @@ class MeinDialog(QtWidgets.QDialog):
         configtext = self.createPlasmaConfig()  #prepare config text
         self.showDialog(configtext)   #ask for confirmation
     
-        
+
+
     def saveProfile(self, profilename=None):
         """
         parses the ui widgets and stores the current settings into last.profile
@@ -317,9 +297,9 @@ class MeinDialog(QtWidgets.QDialog):
         fileobject.write(profileconfigcontent)
         self.ui.status.setText("Configuration saved to %s " % profilename)
         self.getProfiles()   #re-read profiles and populate list
-     
-     
-     
+
+
+
     def saveasProfile(self):
         saveasdialog = QtWidgets.QInputDialog()
         text, ok = saveasdialog.getText(self, 'Save as', 'Enter a profile name:')
@@ -329,8 +309,10 @@ class MeinDialog(QtWidgets.QDialog):
             self.saveProfile(profilename)
         else:
             return
-       
-        
+
+
+
+
     def loadProfile(self, profilename=None):
         """
         reads given profile and resets the ui state
@@ -389,12 +371,44 @@ class MeinDialog(QtWidgets.QDialog):
                 restriction.rcheckbox.setChecked(False)
                 
         self.ui.status.setText("Deselected all restrictions")
+
+
+
+
+    def deleteProfile(self):
+        """
+        deletes the selected profile
+        """
+        try:
+            profilename = self.ui.profileview.currentItem().name.text()
+            profilename += ".profile"   # we stripped the file extension for the wiget .. add it again
+        except:
+            self.ui.status.setText("No profile selected")
+            return
         
-        
-        
-        
-        
-        
+        profilefile = os.path.join(self.scriptdir,self.profilepath,profilename)
+
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText("Kiosk Mode")
+        msg.setInformativeText("Do you want to delete the selected profile?       \n%s" % profilename)
+        msg.setWindowTitle("LiFE Kiosk")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+      
+        retval = msg.exec_()   # 16384 = yes, 65536 = no
+        if str(retval) == "16384":
+            if not os.path.isfile(profilefile):
+                self.ui.status.setText("profile file missing")
+                return
+            else:
+                os.remove(profilefile)
+                self.getProfiles()   #re-read profiles and populate list
+        else:
+            return
+
+
+
+
 
     def createPlasmaConfig(self):
         """
@@ -422,6 +436,8 @@ class MeinDialog(QtWidgets.QDialog):
     
     
     
+    
+    
     def savePlasmaConfig(self, configtext):
         """ 
         writes the configuration to file
@@ -433,8 +449,8 @@ class MeinDialog(QtWidgets.QDialog):
         except IOError:
             print("Please make sure that you have access rights to %s" % self.plasmaconfigglobal )
 
-        
-        
+
+
 
     def reloadDesktop(self):
         """
@@ -442,6 +458,7 @@ class MeinDialog(QtWidgets.QDialog):
         """
         command = "kquitapp5 ksmserver"   #brutal !! FIXME re-read configuration files only 
         os.system(command)
+  
   
   
   
@@ -460,9 +477,7 @@ class MeinDialog(QtWidgets.QDialog):
         retval = msg.exec_()   # 16384 = yes, 65536 = no
         if str(retval) == "16384":
             self.savePlasmaConfig(configtext)
-            #self.reloadDesktop()
-
-        
+            self.reloadDesktop()
 
 
 
