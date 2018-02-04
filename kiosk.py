@@ -8,7 +8,7 @@
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QRect, QPoint
 from PyQt5.uic import loadUi
 
 import ConfigParser
@@ -80,6 +80,10 @@ class MeinDialog(QtWidgets.QDialog):
         """
         scans for .profile files (except last.profile) and adds a widget in the profile listview
         """
+        
+        
+        self.ui.profileview.clear()
+         
         for root, dirs, files in os.walk(self.profilepath):
             for profilefilename in files:
                 if profilefilename.endswith((".profile")) and profilefilename != "last.profile":
@@ -312,13 +316,20 @@ class MeinDialog(QtWidgets.QDialog):
 
         fileobject.write(profileconfigcontent)
         self.ui.status.setText("Configuration saved to %s " % profilename)
-        print("%s written" % profilename)
+        self.getProfiles()   #re-read profiles and populate list
      
      
      
     def saveasProfile(self):
-        item, ok = QInputDialog.getItem(self, "select input dialog", "list of languages", items, 0, False)
-        
+        saveasdialog = QtWidgets.QInputDialog()
+        text, ok = saveasdialog.getText(self, 'Save as', 'Enter a profile name:')
+        if ok:
+            profilename = text.strip()
+            profilename += ".profile"
+            self.saveProfile(profilename)
+        else:
+            return
+       
         
     def loadProfile(self, profilename=None):
         """
