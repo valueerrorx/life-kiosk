@@ -23,6 +23,7 @@ Example:
 
 Installation:
 Just download the repository as zip file, extract and run kiosk.py
+
 Please test and report bugs and feature requests here on github (new issue)
 None of the restriction keys are tested yet. I will check most of them eventually.
 
