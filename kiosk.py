@@ -57,7 +57,7 @@ class MeinDialog(QtWidgets.QDialog):
         #check for root permissions 
         if os.geteuid() != 0:
             print ("You need root access in order to activate KIOSK mode")
-            command = "kdesudo %s" % (os.path.abspath(__file__))
+            command = "pkxexec %s" % (os.path.abspath(__file__))
             self.ui.close()
             os.system(command)
             os._exit(0)
