@@ -39,7 +39,7 @@ class MeinDialog(QtWidgets.QDialog):
         #setup some variables, dicts, lists 
         self.USER = subprocess.check_output("logname", shell=True).rstrip()
         self.USER_HOME_DIR = os.path.join("/home", str(self.USER))
-        self.configpath = "kiosk"
+        self.configpath = os.path.join(self.scriptdir,'kiosk')
         self.profilepath = "profiles"
         self.plasmaconfigglobal = "/etc/xdg/kdeglobals"
         self.lastprofilepath = os.path.join(self.scriptdir,'profiles/last.profile')
