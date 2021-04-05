@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2018 Thomas Michael Weissel
@@ -11,7 +11,7 @@ from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.uic import loadUi
 
-import ConfigParser
+import configparser
 import sys
 import os
 import subprocess
@@ -220,7 +220,7 @@ class MeinDialog(QtWidgets.QDialog):
         :return groupname: string
         :return sectionicon:  qicon
         """
-        self.Config = ConfigParser.ConfigParser()
+        self.Config = configparser.ConfigParser()
         configfilepath = os.path.join(self.configpath,configfilename)
         self.Config.read(configfilepath)
         sections = self.Config.sections()   #creates a list of all found sections in the config file
@@ -361,7 +361,7 @@ class MeinDialog(QtWidgets.QDialog):
 
 
         items = []
-        for index in xrange(self.ui.urllist.count()):
+        for index in range(self.ui.urllist.count()):
             items.append(self.ui.urllist.item(index))
             
         for item in items:
@@ -540,7 +540,7 @@ class MeinDialog(QtWidgets.QDialog):
                 
                 kdeglobalstext += "\n[KDE URL Restrictions][$i]\n"
                 kdeglobalstext += "rule_count=%s\n" %(rulecount)
-                print self.activerestrictions[section]
+                print(self.activerestrictions[section])
                 
                 counter = 1
                 for i in range(entries):
